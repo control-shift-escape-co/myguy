@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uvx ruff check packages/myg
+      - run: uvx black --check packages/myg
+
+  render-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run --with cookiecutter --with pyyaml python scripts/render_test.py
+
+  cli-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run --project packages/myg myg --help
+      - run: uv run --project packages/myg myg init demo --yes --no-provision --output-dir /tmp/myg-out
+      - run: test -f /tmp/myg-out/demo/myg.toml && test -f /tmp/myg-out/demo/docker-compose.yml
+
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run --project packages/myg pytest packages/myg/tests -q

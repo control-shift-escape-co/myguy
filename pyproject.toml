@@ -1,0 +1,25 @@
+# Workspace root — tool config + uv workspace only.
+# The published CLI lives in packages/myg; the npm wrapper in packages/create-myg.
+[tool.uv.workspace]
+members = ["packages/myg"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.basedpyright]
+typeCheckingMode = "standard"
+pythonVersion = "3.11"
+# template/ is un-rendered cookiecutter (jinja inside .py files) — not valid
+# Python until rendered. Generated projects run basedpyright post-render.
+exclude = ["template"]
+
+[tool.pyright]
+exclude = ["template"]

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Docs
+    url: https://control-shift-escape-co.github.io/myguy
+    about: Quickstart, CLI reference, architecture notes

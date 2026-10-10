@@ -1,0 +1,25 @@
+name: Bug report
+description: Something in myg or a generated app is broken
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Tell us what broke. Screenshots > vibes."
+  - type: textarea
+    id: repro
+    attributes:
+      label: Repro steps
+      description: Command you ran + what happened vs what you expected
+      placeholder: "myg init demo --yes → renders but docker compose fails with…"
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "OS, docker version, uv/pipx version, myg version (`myg --version`)"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / output
+      render: shell

@@ -1,0 +1,21 @@
+{
+  "name": "create-myg",
+  "version": "0.1.0",
+  "description": "npm create myg — scaffold a CopilotKit + LangGraph agent app (delegates to the myg Python CLI)",
+  "license": "MIT",
+  "author": "Abhi Avadhani",
+  "homepage": "https://github.com/control-shift-escape-co/myguy",
+  "bin": {
+    "create-myg": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,34 @@
+site_name: myg
+site_description: your guy for agent apps — scaffold a CopilotKit + LangGraph agent in one command
+repo_url: https://github.com/control-shift-escape-co/myguy
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue grey
+      accent: amber
+    - scheme: slate
+      primary: blue grey
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+markdown_extensions:
+  - admonition
+  - tables
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - CLI reference: cli.md
+  - The generated app: template.md
+  - Agent patterns: patterns.md
+  - AI Gateway (Kong): gateway.md
+  - Deploying: deploy.md
+  - Contributing: contributing.md

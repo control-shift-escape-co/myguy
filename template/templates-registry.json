@@ -1,0 +1,7 @@
+[
+  {
+    "name": "default",
+    "source": "https://github.com/control-shift-escape-co/myguy",
+    "notes": "The full myg template — Next.js + CopilotKit + LangGraph + Postgres + optional Kong."
+  }
+]

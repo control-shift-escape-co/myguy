@@ -1,0 +1,89 @@
+name: {{ cookiecutter.project_slug }}
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_APP_NAME: "{{ cookiecutter.project_name }}"
+    environment:
+      NEXT_PUBLIC_APP_NAME: "{{ cookiecutter.project_name }}"
+      AGENT_URL: http://agent:8123/agent
+    ports:
+      - "3000:3000"
+    depends_on:
+      - agent
+
+  agent:
+    build:
+      context: .
+      dockerfile: apps/agent/Dockerfile
+    env_file: .env
+    environment:
+{% if cookiecutter.db == "postgres" %}
+      DATABASE_URL: postgres://postgres:postgres@db:5432/{{ cookiecutter.project_slug.replace('-', '_') }}
+{% endif %}
+{% if cookiecutter.gateway != "off" %}
+      LLM_BASE_URL: http://kong:8000/llm
+{% endif %}
+    ports:
+      - "8123:8123"
+{% if cookiecutter.db == "postgres" or cookiecutter.gateway != "off" %}
+    depends_on:
+{% if cookiecutter.db == "postgres" %}
+      db:
+        condition: service_healthy
+{% endif %}
+{% if cookiecutter.gateway != "off" %}
+      kong:
+        condition: service_started
+{% endif %}
+{% endif %}
+    volumes:
+      - agent-data:/app/data
+{% if cookiecutter.db == "postgres" %}
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: {{ cookiecutter.project_slug.replace('-', '_') }}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+{% endif %}
+{% if cookiecutter.gateway != "off" %}
+
+  kong:
+    image: kong:3.9
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /tmp/kong.rendered.yaml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      LLM_API_KEY: ${LLM_API_KEY:?set LLM_API_KEY in .env}
+    volumes:
+      - ./infra/gateway/kong.yaml:/etc/kong/kong.yaml.tpl:ro
+    # Kong's declarative loader doesn't interpolate env vars — sed in the real key first
+    entrypoint: ["/bin/sh"]
+    command:
+      - -c
+      - "sed \"s|__LLM_API_KEY__|$${LLM_API_KEY}|g\" /etc/kong/kong.yaml.tpl > /tmp/kong.rendered.yaml && exec /docker-entrypoint.sh kong docker-start"
+    ports:
+      - "8000:8000"   # proxy — agent's LLM_BASE_URL points here
+      - "8001:8001"   # admin API
+{% endif %}
+
+volumes:
+  agent-data:
+{% if cookiecutter.db == "postgres" %}
+  pgdata:
+{% endif %}

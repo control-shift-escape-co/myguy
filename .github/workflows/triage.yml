@@ -1,0 +1,47 @@
+name: triage
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  devin-triage:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Start a Devin triage session
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          if [ -z "$DEVIN_API_KEY" ]; then
+            echo "DEVIN_API_KEY secret not set — skipping triage."
+            exit 0
+          fi
+
+          PROMPT="You are triaging a new GitHub issue in ${{ github.repository }}.
+
+          Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}
+
+          ${ISSUE_BODY}
+
+          Task: clone the repo, reproduce or locate the reported behavior in the
+          code, and post your findings as a comment on issue #${ISSUE_NUMBER}
+          via gh issue comment (GH_TOKEN is in the env). Classify it
+          (bug / feature / question / needs-info), point at the relevant files,
+          and if the fix is small and obvious, open a PR for it. If you can't
+          reproduce, say exactly what info would unblock it."
+
+          RESP=$(curl -sf -X POST https://api.devin.ai/v1/sessions \
+            -H "Authorization: Bearer $DEVIN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg prompt "$PROMPT" '{prompt: $prompt}')")
+
+          URL=$(echo "$RESP" | jq -r '.url // empty')
+          echo "Devin session: $URL"
+          gh issue comment "$ISSUE_NUMBER" --repo "${{ github.repository }}" \
+            --body "Devin triage session started: ${URL:-$RESP}"

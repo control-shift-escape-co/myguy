@@ -1,0 +1,23 @@
+{
+    "project_name": "my-agent-app",
+    "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '-') }}",
+    "description": "A single-page agent app scaffolded by myg.",
+    "agent_pattern": [
+        "react",
+        "plan_execute",
+        "supervisor",
+        "swarm",
+        "rag",
+        "hitl",
+        "evaluator_optimizer"
+    ],
+    "system_prompt": "You are a helpful assistant. Be concise and genuinely useful.",
+    "model": "openai:gpt-4o",
+    "subagents": "researcher:Research the user's topic thoroughly and return key facts.\nwriter:Turn the gathered material into polished, well-structured prose.",
+    "ui_style": ["default", "terminal", "brutalist"],
+    "primary_color": "#1d4ed8",
+    "secondary_color": "#f59e0b",
+    "db": ["neon", "postgres", "sqlite"],
+    "gateway": ["off", "local", "konnect"],
+    "_jinja2_env_vars": {"trim_blocks": true, "lstrip_blocks": true}
+}

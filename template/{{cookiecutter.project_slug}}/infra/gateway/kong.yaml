@@ -1,0 +1,50 @@
+# Kong declarative config (decK format) — loaded by the kong service in
+# docker-compose.yml, or synced to Konnect via `infra/konnect/setup-konnect.sh`.
+#
+# The agent sends OpenAI-format requests to http://kong:8000/llm — ai-proxy
+# translates + forwards them to the configured provider with auth, stats
+# logging and rate limiting. This is the "one endpoint, any LLM" pattern.
+#
+# Provider + model are baked in at render time from [agent].model in myg.toml.
+# The provider key is the __LLM_API_KEY__ placeholder — Kong's declarative
+# loader does NOT interpolate env vars, so it's substituted by sed before Kong
+# starts (docker-compose.yml) or before `deck gateway sync` (setup-konnect.sh).
+{% set llm_provider = cookiecutter.model.split(':')[0] -%}
+{% set llm_model = cookiecutter.model.split(':')[-1] -%}
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: llm
+    url: http://placeholder.invalid # upstream is set by the ai-proxy plugin
+    routes:
+      - name: llm-chat
+        paths:
+          - /llm
+        strip_path: true
+    plugins:
+      - name: ai-proxy
+        config:
+          route_type: llm/v1/chat
+          auth:
+{% if llm_provider == "gemini" %}
+            param_name: key
+            param_location: query
+            param_value: "__LLM_API_KEY__"
+{% elif llm_provider == "anthropic" %}
+            header_name: x-api-key
+            header_value: "__LLM_API_KEY__"
+{% else %}
+            header_name: Authorization
+            header_value: "Bearer __LLM_API_KEY__"
+{% endif %}
+          model:
+            provider: {{ llm_provider }}
+            name: {{ llm_model }}
+          logging:
+            log_statistics: true
+            log_payloads: false
+      - name: rate-limiting
+        config:
+          minute: 60
+          policy: local

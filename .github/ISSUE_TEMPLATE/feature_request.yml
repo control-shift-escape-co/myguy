@@ -1,0 +1,16 @@
+name: Feature request
+description: A new pattern, provider, template idea, or CLI improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What should myg do that it doesn't?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it matters
+      placeholder: "What does this unlock for you / users?"
